@@ -1,5 +1,6 @@
 const express = require ('express')
-
+const swaggerUi = require('swagger-ui-express')
+const swaggerJsdoc = require('swagger-jsdoc')
 const app = express()
 
 // tasks array
@@ -21,7 +22,26 @@ const tasks = [
     }
 ];
 
+const swaggerOptions = {
+    definition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'Task API',
+            version: '1.0.0',
+            description: 'A simple CRUD API for managing tasks'
+        },
+        servers: [
+            {
+                url: 'http://localhost:3000'
+            }
+        ]
+    },
+    apis: ['./server.js']
+};
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+
 app.use(express.json())
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // server routes
 app.get('/', (req, res) => {
     res.json({
@@ -38,10 +58,38 @@ app.get('/health', (req, res) => {
 });
 
 //task routes
+/**
+ * @swagger
+ * /tasks:
+ *   get:
+ *     summary: Get all tasks
+ *     description: Returns the list of all tasks.
+ *     responses:
+ *       200:
+ *         description: A list of tasks.
+ */
 app.get('/tasks', (req,res)=>{ 
     res.status(200).json(tasks)
 })
-
+/**
+ * @swagger
+ * /tasks/{id}:
+ *   get:
+ *     summary: Get a task by ID
+ *     description: Returns a single task by its ID.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The task ID
+ *     responses:
+ *       200:
+ *         description: Task found.
+ *       404:
+ *         description: Task not found.
+ */
 app.get('/tasks/:id', (req,res)=>{ 
     const taskid = Number(req.params.id)
     const taskrequired = tasks.find((t)=>t.id === taskid)
@@ -52,7 +100,27 @@ app.get('/tasks/:id', (req,res)=>{
         res.status(404).json({error : `task ${taskid} is not found`})
     }
 })
-
+/**
+ * @swagger
+ * /tasks:
+ *   post:
+ *     summary: Create a new task
+ *     description: Creates a new task with the provided title.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Task created successfully.
+ *       400:
+ *         description: Invalid request.
+ */
 app.post('/tasks', (req, res) => {
     const { title } = req.body;
 
@@ -76,7 +144,38 @@ app.post('/tasks', (req, res) => {
     // Return the created task
     res.status(201).json(newTask);
 });
-
+/**
+ * @swagger
+ * /tasks/{id}:
+ *   put:
+ *     summary: Update a task
+ *     description: Updates the title and done status of a task.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The task ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               done:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Task updated successfully.
+ *       400:
+ *         description: Invalid request.
+ *       404:
+ *         description: Task not found.
+ */
 app.put('/tasks/:id', (req, res) => {
     const updateTaskId = Number(req.params.id);
     const { title, done } = req.body;
@@ -100,7 +199,25 @@ app.put('/tasks/:id', (req, res) => {
 
     res.status(200).json(task);
 });
-
+/**
+ * @swagger
+ * /tasks/{id}:
+ *   delete:
+ *     summary: Delete a task
+ *     description: Deletes a task by its ID.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The task ID
+ *     responses:
+ *       204:
+ *         description: Task deleted successfully.
+ *       404:
+ *         description: Task not found.
+ */
 app.delete('/tasks/:id', (req, res) => {
     const taskDeleteId = Number(req.params.id);
 
