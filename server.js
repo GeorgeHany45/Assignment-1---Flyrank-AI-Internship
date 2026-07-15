@@ -100,6 +100,30 @@ app.put('/tasks/:id', (req, res) => {
 
     res.status(200).json(task);
 });
+
+app.delete('/tasks/:id', (req, res) => {
+    const taskDeleteId = Number(req.params.id);
+
+    // Find the task
+    const task = tasks.find(t => t.id === taskDeleteId);
+
+    // Task doesn't exist
+    if (!task) {
+        return res.status(404).json({
+            error: `Task ${taskDeleteId} not found`
+        });
+    }
+
+    // Find its index in the array
+    const index = tasks.findIndex(t => t.id === taskDeleteId);
+
+    // Remove it
+    tasks.splice(index, 1);
+
+    // Success (No Content)
+    res.sendStatus(204);
+});
+
 app.listen ( 3000 , ()=>{
     console.log('listening on port 3000')
 })
