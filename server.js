@@ -77,7 +77,29 @@ app.post('/tasks', (req, res) => {
     res.status(201).json(newTask);
 });
 
+app.put('/tasks/:id', (req, res) => {
+    const updateTaskId = Number(req.params.id);
+    const { title, done } = req.body;
 
+    const task = tasks.find(t => t.id === updateTaskId);
+
+    if (!task) {
+        return res.status(404).json({
+            error: `Task ${updateTaskId} not found`
+        });
+    }
+
+    if (!title || title.trim().length === 0) {
+        return res.status(400).json({
+            error: "Title is required"
+        });
+    }
+
+    task.title = title;
+    task.done = done;
+
+    res.status(200).json(task);
+});
 app.listen ( 3000 , ()=>{
     console.log('listening on port 3000')
 })
